@@ -29,7 +29,7 @@ func initCli() *cli.App {
 				Name:      "listen",
 				Aliases:   []string{"l"},
 				Usage:     "Listen a Kafka topic and wait",
-				ArgsUsage: "<kafka> <topic> <group> <key>",
+				ArgsUsage: "<kafka> <topic> <group> <username> <password>",
 				Action: listenAction,
 			},
 		},

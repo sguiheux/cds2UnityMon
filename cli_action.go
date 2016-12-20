@@ -6,7 +6,7 @@ import (
 	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
 )
-
+// xvifaaacfcs76-XbDsPfYPjogLOaw4eO
 func helpAction(c *cli.Context) error {
 	fmt.Println("Coucou")
 	return nil
@@ -15,7 +15,7 @@ func helpAction(c *cli.Context) error {
 func listenAction(c *cli.Context) error {
 	args := []string{c.Args().First()}
 	args = append(args, c.Args().Tail()...)
-	if len(args) != 4 {
+	if len(args) != 5 {
 		cli.ShowCommandHelp(c, "listen")
 		return cli.NewExitError("Invalid usage", 10)
 	}
@@ -24,9 +24,10 @@ func listenAction(c *cli.Context) error {
 	kafka := c.Args().Get(0)
 	topic := c.Args().Get(1)
 	group := c.Args().Get(2)
-	key := c.Args().Get(3)
+	username := c.Args().Get(3)
+	password := c.Args().Get(4)
 
-	if err := consumeFromKafka(kafka, topic, group, key); err != nil {
+	if err := consumeFromKafka(kafka, topic, group, username, password); err != nil {
 		return cli.NewExitError(err.Error(), 13)
 	}
 
