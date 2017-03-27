@@ -12,10 +12,13 @@ import (
 var mapPb map[string]string
 
 func consumeFromKafka(kafka, topic, group, username, password string) {
+	log.Info("Init kafka consumer")
 	mapPb = make(map[string]string)
-	event.ConsumeKafka(kafka, topic, group, username, password, func(e sdk.Event) error {
+	if err := event.ConsumeKafka(kafka, topic, group, username, password, func(e sdk.Event) error {
 		return process(e)
-	}, log.Errorf)
+	}, log.Errorf); err != nil {
+		log.Errorf("Unable to init kafka consumer: %s", err)
+	}
 }
 
 // Process send message to all notifications backend
