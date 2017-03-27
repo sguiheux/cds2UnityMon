@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
+	"gopkg.in/urfave/cli.v1"
 )
 
 func helpAction(c *cli.Context) error {
@@ -20,14 +21,17 @@ func listenAction(c *cli.Context) error {
 		return cli.NewExitError("Invalid usage", 10)
 	}
 
-	//Get arguments from commandline
-	kafka := c.Args().Get(0)
-	topic := c.Args().Get(1)
-	group := c.Args().Get(2)
-	username := c.Args().Get(3)
-	password := c.Args().Get(4)
+	kafkaHost := os.Getenv("kafka_host")
+	topic := os.Getenv("kafka_topic")
+	group := os.Getenv("kafka_group")
+	username := os.Getenv("kafka_username")
+	password := os.Getenv("kafka_password")
 
-	go consumeFromKafka(kafka, topic, group, username, password)
+	if kafkaHost == "" || topic == "" || group == "" || username == "" || password == "" {
+		return cli.NewExitError("Missing env variable", 11)
+	}
+
+	go consumeFromKafka(kafkaHost, topic, group, username, password)
 
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -44,7 +48,7 @@ func listenAction(c *cli.Context) error {
 			c.JSON(410, "")
 			return
 		}
-		c.JSON(200, gin.H{ "status": mapPb[key]})
+		c.JSON(200, gin.H{"status": mapPb[key]})
 	})
 	r.Run()
 	return nil

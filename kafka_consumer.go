@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/mitchellh/mapstructure"
-
-	"fmt"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/event"
 )
