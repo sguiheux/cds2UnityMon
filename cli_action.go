@@ -21,6 +21,7 @@ func listenAction(c *cli.Context) error {
 	username := os.Getenv("kafka_username")
 	password := os.Getenv("kafka_password")
 
+
 	if kafkaHost == "" || topic == "" || group == "" || username == "" || password == "" {
 		return cli.NewExitError("Missing env variable", 11)
 	}
@@ -44,6 +45,6 @@ func listenAction(c *cli.Context) error {
 		}
 		c.JSON(200, gin.H{"status": mapPb[key]})
 	})
-	r.Run()
+	r.Run("0.0.0.0:8080")
 	return nil
 }
