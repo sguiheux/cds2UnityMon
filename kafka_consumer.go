@@ -1,44 +1,59 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"github.com/mitchellh/mapstructure"
 
-	"gopkg.in/bsm/sarama-cluster.v2"
-	"github.com/Shopify/sarama"
+	"fmt"
+	"github.com/ovh/cds/sdk"
+	"github.com/ovh/cds/sdk/event"
 )
 
-func consumeFromKafka(kafka, topic, group, username, password string) error {
+var mapPb map[string]string
 
-	var config = sarama.NewConfig()
-	config.Net.TLS.Enable = true
-	config.Net.SASL.Enable = true
-	config.Net.SASL.User = username
-	config.Net.SASL.Password = password
-	config.Version = sarama.V0_10_0_1
-	config.ClientID = username
+func consumeFromKafka(kafka, topic, group, username, password string) {
+	mapPb = make(map[string]string)
+	event.ConsumeKafka(kafka, topic, group, username, password, func(e sdk.Event) error {
+		return process(e)
+	}, log.Errorf)
+}
 
-	clusterConfig := cluster.NewConfig()
-	clusterConfig.Config = *config
-	clusterConfig.Consumer.Return.Errors = true
+// Process send message to all notifications backend
+func process(event sdk.Event) error {
+	log.Debugf("process> receive: type:%s all: %+v", event.EventType, event)
 
-	var errConsumer error
-	consumer, errConsumer := cluster.NewConsumer([]string{kafka}, group, []string{topic}, clusterConfig)
-	if errConsumer != nil {
-		fmt.Printf("Error creating consumer: %s\n", errConsumer)
-		return errConsumer
-	}
-
-	// Consume errors
-	go func() {
-		for err := range consumer.Errors() {
-			fmt.Printf("Error during consumption: %s\n", err)
+	if event.EventType == fmt.Sprintf("%T", sdk.EventPipelineBuild{}) {
+		var e sdk.EventPipelineBuild
+		if err := mapstructure.Decode(event.Payload, &e); err != nil {
+			log.Errorf("Error during consumption EventPipelineBuild: %s", err)
+		} else {
+			return processEventPipelineBuild(&e)
 		}
-	}()
-
-	fmt.Println("Ready to consume messages...")
-	// Consume messages
-	for msg := range consumer.Messages() {
-		fmt.Println(string(msg.Value))
 	}
+	return nil
+}
+
+func processEventPipelineBuild(e *sdk.EventPipelineBuild) error {
+	key := fmt.Sprintf("%s-%s-%s-%s-%s-%d", e.ProjectKey, e.ApplicationName, e.PipelineName, e.EnvironmentName, e.BranchName, e.BuildNumber)
+	_, found := mapPb[key]
+	if !found {
+		switch e.Status.String() {
+		case "Success":
+		case "Fail":
+		default:
+			mapPb[key] = e.Status.String()
+		}
+		return nil
+	}
+
+	switch e.Status.String() {
+	case "Success":
+		delete(mapPb, key)
+	case "Fail":
+		delete(mapPb, key)
+	default:
+		mapPb[key] = e.Status.String()
+	}
+
 	return nil
 }

@@ -6,7 +6,7 @@ import (
 	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
 )
-// xvifaaacfcs76-XbDsPfYPjogLOaw4eO
+
 func helpAction(c *cli.Context) error {
 	fmt.Println("Coucou")
 	return nil
@@ -27,15 +27,24 @@ func listenAction(c *cli.Context) error {
 	username := c.Args().Get(3)
 	password := c.Args().Get(4)
 
-	if err := consumeFromKafka(kafka, topic, group, username, password); err != nil {
-		return cli.NewExitError(err.Error(), 13)
-	}
+	go consumeFromKafka(kafka, topic, group, username, password)
 
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
+	})
+	r.GET("/queue", func(c *gin.Context) {
+		c.JSON(200, mapPb)
+	})
+	r.GET("/queue/:key", func(c *gin.Context) {
+		key := c.Param("key")
+		if _, ok := mapPb[key]; !ok {
+			c.JSON(410, "")
+			return
+		}
+		c.JSON(200, gin.H{ "status": mapPb[key]})
 	})
 	r.Run()
 	return nil
