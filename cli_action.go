@@ -14,12 +14,6 @@ func helpAction(c *cli.Context) error {
 }
 
 func listenAction(c *cli.Context) error {
-	args := []string{c.Args().First()}
-	args = append(args, c.Args().Tail()...)
-	if len(args) != 5 {
-		cli.ShowCommandHelp(c, "listen")
-		return cli.NewExitError("Invalid usage", 10)
-	}
 
 	kafkaHost := os.Getenv("kafka_host")
 	topic := os.Getenv("kafka_topic")
