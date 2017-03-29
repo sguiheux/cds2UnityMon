@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/ovh/cds/sdk"
 	"github.com/ovh/cds/sdk/event"
+	"strings"
 )
 
 var mapPb map[string]string
@@ -23,8 +24,7 @@ func consumeFromKafka(kafka, topic, group, username, password string) {
 
 // Process send message to all notifications backend
 func process(event sdk.Event) error {
-	log.Debugf("process> receive: type:%s all: %+v", event.EventType, event)
-
+	log.Infof("process> receive: type:%s all: %+v", event.EventType, event)
 	if event.EventType == fmt.Sprintf("%T", sdk.EventPipelineBuild{}) {
 		var e sdk.EventPipelineBuild
 		if err := mapstructure.Decode(event.Payload, &e); err != nil {
@@ -37,7 +37,7 @@ func process(event sdk.Event) error {
 }
 
 func processEventPipelineBuild(e *sdk.EventPipelineBuild) error {
-	key := fmt.Sprintf("%s-%s-%s-%s-%s-%d", e.ProjectKey, e.ApplicationName, e.PipelineName, e.EnvironmentName, e.BranchName, e.BuildNumber)
+	key := strings.Replace(fmt.Sprintf("%s-%s-%s-%s-%s-%d", e.ProjectKey, e.ApplicationName, e.PipelineName, e.EnvironmentName, e.BranchName, e.BuildNumber), "/", "-", -1)
 	_, found := mapPb[key]
 	if !found {
 		switch e.Status.String() {
