@@ -28,7 +28,7 @@ func listenAction(c *cli.Context) error {
 
 	go consumeFromKafka(kafkaHost, topic, group, username, password)
 
-	r := gin.Default()
+	r := gin.New()
 	r.GET("/mon/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
