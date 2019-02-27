@@ -1,0 +1,14 @@
+name: BecomeAsCodeGithub
+version: v1.0
+pipeline: checkout
+payload:
+  git.author: ""
+  git.branch: master
+  git.hash: ""
+  git.hash.before: ""
+  git.message: ""
+  git.repository: sguiheux/cds2UnityMon
+  git.tag: ""
+application: GithubAsCode
+metadata:
+  default_tags: git.branch,git.author
