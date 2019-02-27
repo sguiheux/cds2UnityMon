@@ -1,0 +1,8 @@
+version: v1.0
+name: checkout
+jobs:
+- job: New Job
+  steps:
+  - checkout: '{{.cds.workspace}}'
+  requirements:
+  - binary: git
