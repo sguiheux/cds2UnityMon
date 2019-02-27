@@ -1,0 +1,6 @@
+version: v1.0
+name: GithubAsCode
+vcs_server: github
+repo: sguiheux/cds2UnityMon
+vcs_user: sguiheux
+vcs_password: a0a99b9cb1a74f36836bdf7541d2cba8
